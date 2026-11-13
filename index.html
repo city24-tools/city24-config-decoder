@@ -85,8 +85,17 @@ function decodeConfig(text,name){
  add('BiosRestartTimeout',"При відсутності зв'язку переводити час через",'minutes');
  add('BiosRestartMinutesTimespan','Переводити час на','clock');
  add('RebootTimeout',"Перезавантаження без переведення часу при зникненні зв'язку через",'minutes');
- const con=[...doc.getElementsByTagName('*')].filter(n=>n.children&&n.querySelector(':scope > Name')&&n.querySelector(':scope > Priority'));
- if(con.length){lines.push('','ПРІОРИТЕТИ З’ЄДНАННЯ');con.forEach(n=>lines.push("Пріоритет з'єднання "+n.querySelector(':scope > Priority').textContent.trim()+': '+n.querySelector(':scope > Name').textContent.trim()))}
+ const con=[];
+ for(const n of [...doc.getElementsByTagName('*')]){
+  const ch=[...n.children];
+  for(let i=0;i<ch.length-1;i++){
+   if(ch[i].tagName==='Name'&&ch[i+1].tagName==='Priority'){
+    con.push({name:ch[i].textContent.trim(),priority:ch[i+1].textContent.trim()});
+    i++;
+   }
+  }
+ }
+ if(con.length){lines.push('','ПРІОРИТЕТИ З’ЄДНАННЯ');con.forEach(x=>lines.push("Пріоритет з'єднання "+x.priority+': '+x.name))}
  lines.push('','НАЛАШТУВАННЯ ПРИНТЕРА');
  add('Type','Модель принтера');add('Port','Порт принтера');add('CharSize','Шрифт');
  add('PrintAsRasterImage','Друк картинкою','bool');add('EncashmentCheckType','Тип чеку інкаса');
