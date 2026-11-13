@@ -98,6 +98,7 @@ function decodeConfig(text,name){
    con.push({name:names[i].textContent.trim(),priority:priorities[i].textContent.trim()});
   }
  }
+ // Keep the raw PriorityCheckFrequency value in seconds.
  const priorityCheckFrequency=txt(doc,'PriorityCheckFrequency');
  if(con.length||priorityCheckFrequency!==null){
   lines.push('','ПРІОРИТЕТИ З’ЄДНАННЯ');
