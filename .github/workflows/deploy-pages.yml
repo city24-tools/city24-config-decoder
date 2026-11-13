@@ -40,7 +40,7 @@ jobs:
             echo "ERROR: Filing archive.wasm was not found."
             exit 1
           fi
-          cp "$JS_FILE" _site/vendor/filing.min.js
+          cp "$JS_FILE" _site/vendor/filing.browser.min.js
           cp "$WASM_FILE" _site/vendor/archive.wasm
           printf '' > _site/.nojekyll
           echo "Packaged local Filing JS and WebAssembly:"
