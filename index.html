@@ -86,14 +86,18 @@ async function processFile(file){
   if(file.name.toLowerCase().endsWith('.config')) configs=[{filename:file.name,file}];
   else if(file.name.toLowerCase().endsWith('.7z')){
     if(!window.filing)throw new Error('Бібліотека розпакування не завантажилася. Перевірте підключення до Інтернету та відкрийте сторінку повторно.');
-    const BrowserExtractor=window.filing.FilingBrowserWorker || window.filing.FilingBrowser;
-    if(!BrowserExtractor)throw new Error('У бібліотеці не знайдено модуль FilingBrowserWorker/FilingBrowser.');
+    // The UMD/CDN build documents FilingBrowser. FilingBrowserWorker is an ESM export
+    // and may not be compatible with the standalone UMD bundle.
+    const BrowserExtractor=window.filing.FilingBrowser;
+    if(!BrowserExtractor)throw new Error('Бібліотека завантажилась, але FilingBrowser відсутній у CDN-версії.');
     setStatus('Завантаження модуля 7-Zip…');
     const arc=new BrowserExtractor({wasmUrl:'https://unpkg.com/filing/dist/esm/wasm/archive.wasm'});
     setStatus('Розпакування архіву 7-Zip…');
     const entries=await arc.extract(file);
-    configs=entries.filter(e=>(e.pathname||e.filename||'').toLowerCase().endsWith('.config')&&e.file);
+    configs=entries.filter(e=>(e.pathname||e.filename||'').toLowerCase().endsWith('.config'));
     if(!configs.length)throw new Error('В архіві не знайдено файлів .config.');
+    configs=configs.map(e=>({...e,file:e.file || (e.data ? new File([e.data],e.filename||'config.config',{type:e.type||'application/xml'}) : null)})).filter(e=>e.file);
+    if(!configs.length)throw new Error('Архів розпаковано, але бібліотека не повернула вміст файлу .config.');
   }else throw new Error('Підтримуються лише .config та .7z.');
   const reports=[];
   for(const item of configs){const raw=await item.file.text();reports.push(decodeConfig(raw,item.pathname||item.filename||file.name))}
