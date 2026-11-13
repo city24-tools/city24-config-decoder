@@ -100,8 +100,21 @@ function decodeConfig(text,name){
  add('SelectedValidator','Тип купюроприймача');
 
 
- const tasks=[...doc.getElementsByTagName('SystemTaskSetting')].filter(t=>{const e=t.getElementsByTagName('EventType')[0];return e&&e.textContent.trim()==='Shutdown'});
- if(tasks.length){tasks.forEach(t=>{[['BeginTime','Вимикати термінал о'],['EndTime','Не давати вмикатися до']].forEach(([tag,label])=>{const v=txt(t,tag);if(v!==null)lines.push(label+': '+clock(v))});[['IsEnabled','Завдання активне'],['ExecutedInSpecifiedTimeInterval','Виконувати у визначеному часовому інтервалі']].forEach(([tag,label])=>{const v=txt(t,tag);if(v!==null)lines.push(label+': '+bool(v))})})}
+ const taskNodes=[...doc.getElementsByTagName('SystemTaskSetting')];
+ const shutdownTasks=taskNodes.filter(t=>{const e=t.getElementsByTagName('EventType')[0];return !e||e.textContent.trim().toLowerCase()==='shutdown'});
+ const sources=shutdownTasks.length?shutdownTasks:[doc];
+ const emitted=new Set();
+ sources.forEach(t=>{
+  [['BeginTime','Вимикати термінал о','clock'],['EndTime','Не давати вмикатися до','clock'],['IsEnabled','Завдання активне','bool'],['ExecutedInSpecifiedTimeInterval','Виконувати у визначеному часовому інтервалі','bool']].forEach(([tag,label,mode])=>{
+   const v=txt(t,tag);if(v!==null&&!emitted.has(tag)){lines.push(label+': '+(mode==='clock'?clock(v):bool(v)));emitted.add(tag)}
+  });
+ });
+ // Fallback for configurations where schedule fields are stored outside SystemTaskSetting.
+ if(!emitted.size){
+  [['BeginTime','Вимикати термінал о','clock'],['EndTime','Не давати вмикатися до','clock'],['IsEnabled','Завдання активне','bool'],['ExecutedInSpecifiedTimeInterval','Виконувати у визначеному часовому інтервалі','bool']].forEach(([tag,label,mode])=>{
+   const v=txt(doc,tag);if(v!==null){lines.push(label+': '+(mode==='clock'?clock(v):bool(v)));emitted.add(tag)}
+  });
+ }
 
  return lines.join('\r\n');
 }
