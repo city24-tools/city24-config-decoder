@@ -23,6 +23,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Build self-contained site with local 7-Zip assets
+        run: |
+          mkdir -p /tmp/filing-package _site/vendor
+          npm install --prefix /tmp/filing-package --no-save filing@0.1.2
+          cp index.html _site/index.html
+          cp /tmp/filing-package/node_modules/filing/dist/umd/filing.min.js _site/vendor/filing.min.js
+          cp /tmp/filing-package/node_modules/filing/dist/esm/wasm/archive.wasm _site/vendor/archive.wasm
+          printf '' > _site/.nojekyll
+          echo "Packaged local Filing JS and WebAssembly:"
+          ls -lh _site/vendor
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
@@ -30,7 +40,7 @@ jobs:
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
