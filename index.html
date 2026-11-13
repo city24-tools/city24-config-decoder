@@ -59,7 +59,7 @@ function renderReport(text){
   let section=null,grid=null;
   lines.slice(1).forEach(line=>{
    if(line===lines[1]&&line.startsWith('Файл:')){const meta=document.createElement('div');meta.className='report-item';meta.style.marginBottom='9px';const lab=document.createElement('span');lab.className='report-label';lab.textContent='ФАЙЛ';const val=document.createElement('span');val.className='report-value';val.textContent=line.slice(5).trim();meta.append(lab,val);wrap.appendChild(meta);return}
-   if(/^[А-ЯІЇЄҐ’'0-9 ][А-ЯІЇЄҐ’'0-9 _-]{3,}$/.test(line)&&!line.includes(':')){
+   if(/^[A-ZА-ЯІЇЄҐ’'0-9 ][A-ZА-ЯІЇЄҐ’'0-9 _-]{3,}$/.test(line)&&!line.includes(':')){
     section=document.createElement('section');section.className='report-section';
     const h=document.createElement('h3');h.textContent=line;section.appendChild(h);
     grid=document.createElement('div');grid.className='report-grid';section.appendChild(grid);wrap.appendChild(section);return;
@@ -107,6 +107,7 @@ function decodeConfig(text,name){
   const v=deviceValue(tag);
   let out=v;
   if(v===null||v==='')out='Не задано';
+  else if(format==='bool')out=bool(v);
   else if(format==='connection'&&v==='TCP_IP')out='TCP/IP';
   lines.push(label+': '+out);
  };
@@ -114,6 +115,7 @@ function decodeConfig(text,name){
  addPos('PosConnectionType','Тип підключення','connection');
  addPos('PosIpAddress','IP-адреса POS');
  addPos('PosIpPort','Порт POS');
+ addPos('UsePosTerminal','Використання POS-термінала','bool');
  lines.push('','ДОДАТКОВІ МОЖЛИВОСТІ');
  const nfcValue=deviceValue('UseNfcReader');
  if(nfcValue!==null)lines.push('Наявність NFC: '+bool(nfcValue,'yesno'));
