@@ -101,6 +101,7 @@ function decodeConfig(text,name){
  add('PrintAsRasterImage','Друк картинкою','bool');add('EncashmentCheckType','Тип чеку інкаса');
  lines.push('','ІНТЕРФЕЙС ТА ЕКРАН');
  // ShowMousePointer controls mouse cursor visibility.
+ // Display the ShowMousePointer setting at the top of this section.
  add('ShowMousePointer','Показ курсора на екрані','bool');
  add('AdvertisementPlayerEnabled','Модуль реклами','bool');
  let m=txt(doc,'OnlyOneMonitor');if(m!==null)lines.push('Кількість моніторів: '+(/^true$/i.test(m)?'1':(/^false$/i.test(m)?'2':m)));
