@@ -6,7 +6,7 @@
 <title>City24 Config Decoder</title>
 <style>
 :root{color-scheme:light;--ink:#203047;--muted:#6b7788;--line:#dce4ed;--blue:#2769a6;--bg:#f3f6fa;--pale:#f5f8fc}
-*{box-sizing:border-box}body::before,body::after{content:"";position:fixed;top:50%;width:170px;height:170px;transform:translateY(-50%);background-position:center;background-repeat:no-repeat;background-size:contain;opacity:.10;pointer-events:none;z-index:0}body::before{left:18px;background-image:url("https://city24.ua/logo-page/svg/city24-icon-top-light.svg")}body::after{right:18px;background-image:url("https://city24.ua/logo-page/svg/city24-light.svg")}body{margin:0;background:linear-gradient(145deg,#eef4fa,#f8fafc);font:14px "Segoe UI",Arial,sans-serif;color:var(--ink);min-height:100vh;display:grid;place-items:center;padding:16px}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#eef4fa,#f8fafc);font:14px "Segoe UI",Arial,sans-serif;color:var(--ink);min-height:100vh;display:grid;place-items:center;padding:16px}
 .app{position:relative;z-index:1;width:min(1100px,100%);background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 18px 55px #263b5518;overflow:hidden}
 header{padding:25px 30px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:15px}
 .logo{width:46px;height:46px;border-radius:13px;background:#e8f2fc;color:var(--blue);display:grid;place-items:center;font-size:23px;font-weight:700}
@@ -25,7 +25,7 @@ button:hover,.filebtn:hover{background:#1e568c}.secondary{background:#edf2f7;col
 .note{font-size:12px;color:var(--muted);line-height:1.5;margin:13px 2px 0}
 footer{padding:13px 30px;background:#fafbfd;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
 .good{color:#198754}.bad{color:#b42318}
-@media(max-width:600px){body::before,body::after{display:none}body{padding:8px}main{padding:13px}.drop{min-height:58px;gap:8px}.drop strong{font-size:12px}.report-item{grid-template-columns:minmax(0,1fr);gap:4px}.panelhead{align-items:flex-start;gap:10px;flex-direction:column}}
+@media(max-width:600px){body{padding:8px}main{padding:13px}.drop{min-height:58px;gap:8px}.drop strong{font-size:12px}.report-item{grid-template-columns:minmax(0,1fr);gap:4px}.panelhead{align-items:flex-start;gap:10px;flex-direction:column}}
 </style>
 </head>
 <body>
@@ -98,6 +98,10 @@ function decodeConfig(text,name){
  add('SetDispalyResulitionAfrterStart','Встановлювати роздільну здатність при старті','yesno');
  const w=doc.querySelector('MainDisplayResolution Width'),h=doc.querySelector('MainDisplayResolution Height');if(w&&h)lines.push('Стартувати з роздільною здатністю: '+w.textContent.trim()+' x '+h.textContent.trim());
  add('SelectedValidator','Тип купюроприймача');
+
+
+ const tasks=[...doc.getElementsByTagName('SystemTaskSetting')].filter(t=>{const e=t.getElementsByTagName('EventType')[0];return e&&e.textContent.trim()==='Shutdown'});
+ if(tasks.length){tasks.forEach(t=>{[['BeginTime','Вимикати термінал о'],['EndTime','Не давати вмикатися до']].forEach(([tag,label])=>{const v=txt(t,tag);if(v!==null)lines.push(label+': '+clock(v))});[['IsEnabled','Завдання активне'],['ExecutedInSpecifiedTimeInterval','Виконувати у визначеному часовому інтервалі']].forEach(([tag,label])=>{const v=txt(t,tag);if(v!==null)lines.push(label+': '+bool(v))})})}
 
  return lines.join('\r\n');
 }
