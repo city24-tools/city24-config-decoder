@@ -43,7 +43,7 @@ footer{padding:13px 30px;background:#fafbfd;border-top:1px solid var(--line);fon
 </main>
 <footer>City24 Config Decoder · Windows 10 / Chrome / Edge</footer>
 </div>
-<script src="https://unpkg.com/filing/dist/umd/filing.min.js"></script>
+
 <script>
 const $=id=>document.getElementById(id);
 let lastText='',lastName='city24.decoded.txt';
@@ -79,19 +79,40 @@ function decodeConfig(text,name){
  if(tasks.length){lines.push('','КЕРУВАННЯ ЖИВЛЕННЯМ ТЕРМІНАЛА');tasks.forEach(t=>{[['BeginTime','Вимикати термінал о'],['EndTime','Не давати вмикатися до']].forEach(([tag,label])=>{const v=txt(t,tag);if(v!==null)lines.push(label+': '+clock(v))});[['IsEnabled','Завдання активне'],['ExecutedInSpecifiedTimeInterval','Виконувати у визначеному часовому інтервалі']].forEach(([tag,label])=>{const v=txt(t,tag);if(v!==null)lines.push(label+': '+bool(v))})})}
  return lines.join('\r\n');
 }
+let filingWasmUrl='https://cdn.jsdelivr.net/npm/filing/dist/esm/wasm/archive.wasm';
+async function ensureFiling(){
+ if(window.filing && window.filing.FilingBrowser)return;
+ const sources=[
+  ['https://cdn.jsdelivr.net/npm/filing/dist/umd/filing.min.js','https://cdn.jsdelivr.net/npm/filing/dist/esm/wasm/archive.wasm'],
+  ['https://unpkg.com/filing/dist/umd/filing.min.js','https://unpkg.com/filing/dist/esm/wasm/archive.wasm']
+ ];
+ let errors=[];
+ for(const [src,wasm] of sources){
+  try{
+   await new Promise((resolve,reject)=>{
+    const s=document.createElement('script');s.src=src;s.async=true;
+    s.onload=()=>resolve();s.onerror=()=>reject(new Error('Не вдалося завантажити '+src));
+    document.head.appendChild(s);
+   });
+   if(window.filing && window.filing.FilingBrowser){filingWasmUrl=wasm;return;}
+   errors.push('Скрипт завантажився, але FilingBrowser не знайдено: '+src);
+  }catch(e){errors.push(e.message);}
+ }
+ throw new Error('Не вдалося завантажити бібліотеку 7-Zip з CDN. Перевірте доступ до cdn.jsdelivr.net та unpkg.com. Деталі: '+errors.join(' | '));
+}
 async function processFile(file){
  try{
   setStatus('Обробка: '+file.name);
   let configs=[];
   if(file.name.toLowerCase().endsWith('.config')) configs=[{filename:file.name,file}];
   else if(file.name.toLowerCase().endsWith('.7z')){
-    if(!window.filing)throw new Error('Бібліотека розпакування не завантажилася. Перевірте підключення до Інтернету та відкрийте сторінку повторно.');
+    await ensureFiling();
     // The UMD/CDN build documents FilingBrowser. FilingBrowserWorker is an ESM export
     // and may not be compatible with the standalone UMD bundle.
     const BrowserExtractor=window.filing.FilingBrowser;
     if(!BrowserExtractor)throw new Error('Бібліотека завантажилась, але FilingBrowser відсутній у CDN-версії.');
     setStatus('Завантаження модуля 7-Zip…');
-    const arc=new BrowserExtractor({wasmUrl:'https://unpkg.com/filing/dist/esm/wasm/archive.wasm'});
+    const arc=new BrowserExtractor({wasmUrl:filingWasmUrl});
     setStatus('Розпакування архіву 7-Zip…');
     const entries=await arc.extract(file);
     configs=entries.filter(e=>(e.pathname||e.filename||'').toLowerCase().endsWith('.config'));
