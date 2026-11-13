@@ -30,7 +30,7 @@ jobs:
           cp index.html _site/index.html
           echo "Installed Filing package files:"
           find /tmp/filing-package/node_modules/filing/dist -maxdepth 5 -type f -print
-          JS_FILE="$(find /tmp/filing-package/node_modules/filing/dist/umd -maxdepth 2 -type f -name '*.js' -print -quit)"
+          JS_FILE="$(find /tmp/filing-package/node_modules/filing/dist/umd -maxdepth 2 -type f -name 'filing.browser.min.js' -print -quit)"
           WASM_FILE="$(find /tmp/filing-package/node_modules/filing/dist -type f -name 'archive.wasm' -print -quit)"
           if [ -z "$JS_FILE" ]; then
             echo "ERROR: Filing UMD JavaScript bundle was not found."
