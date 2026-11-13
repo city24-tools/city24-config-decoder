@@ -20,7 +20,7 @@ button:hover,.filebtn:hover{background:#1e568c}.secondary{background:#edf2f7;col
 #file{display:none}.status{margin:18px 2px 12px;color:var(--muted);font-size:13px;min-height:20px}
 .panel{border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .panelhead{padding:12px 15px;background:#f8fafc;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-weight:650}
-#result{padding:14px;min-height:150px;max-height:440px;overflow:auto;background:#fff}.report-file{margin:0 0 16px}.report-file:last-child{margin-bottom:0}.report-title{display:flex;align-items:center;gap:8px;margin:0 0 11px;padding:0 2px;color:#52647b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.report-title:before{content:"";width:4px;height:17px;border-radius:4px;background:#397db7}.report-section{margin:0 0 12px;border:1px solid #e5ebf2;border-radius:10px;overflow:hidden}.report-section h3{margin:0;padding:10px 13px;background:#eaf1f8;color:#173f68;font-size:12px;letter-spacing:.045em;border-bottom:1px solid #d7e2ed}.report-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;padding:9px}.report-item{min-width:0;display:grid;grid-template-columns:minmax(210px,38%) minmax(0,1fr);align-items:center;gap:12px;padding:10px 13px;background:#fbfcfe;border:1px solid #e5ebf2;border-left:3px solid #9bb9d7;border-radius:7px}.report-label{display:block;color:#435b76;font-size:12px;font-weight:600;line-height:1.35}.report-value{display:block;color:#075da8;font-size:14px;font-weight:700;line-height:1.4;overflow-wrap:anywhere}.report-error{padding:13px;border:1px solid #f2caca;background:#fff7f7;border-radius:9px;color:#a52222;white-space:pre-wrap}
+#result{padding:14px;min-height:150px;max-height:440px;overflow:auto;background:#fff}.report-file{margin:0 0 16px}.report-file:last-child{margin-bottom:0}.report-title{display:flex;align-items:center;gap:8px;margin:0 0 11px;padding:0 2px;color:#52647b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.report-title:before{content:"";width:4px;height:17px;border-radius:4px;background:#397db7}.report-section{margin:0 0 12px;border:1px solid #e5ebf2;border-radius:10px;overflow:hidden}.report-section h3{margin:0;padding:10px 13px;background:#eaf1f8;color:#173f68;font-size:12px;letter-spacing:.045em;border-bottom:1px solid #d7e2ed}.report-group-title{margin:0 0 10px;padding:1px 2px;color:#173f68;font-size:13px;font-weight:750;letter-spacing:.045em}.report-section.shutdown-highlight{border-color:#bed4e9;background:#f4f8fc}.report-section.shutdown-highlight h3{background:#dceaf7;color:#16476f;border-bottom-color:#c5d9ec}.report-section.shutdown-highlight .report-grid{background:#f3f8fd}.report-section.shutdown-highlight .report-item{background:#f8fbff;border-color:#d5e4f2;border-left-color:#6f9ec9}.report-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;padding:9px}.report-item{min-width:0;display:grid;grid-template-columns:minmax(210px,38%) minmax(0,1fr);align-items:center;gap:12px;padding:10px 13px;background:#fbfcfe;border:1px solid #e5ebf2;border-left:3px solid #9bb9d7;border-radius:7px}.report-label{display:block;color:#435b76;font-size:12px;font-weight:600;line-height:1.35}.report-value{display:block;color:#075da8;font-size:14px;font-weight:700;line-height:1.4;overflow-wrap:anywhere}.report-error{padding:13px;border:1px solid #f2caca;background:#fff7f7;border-radius:9px;color:#a52222;white-space:pre-wrap}
 .actions{display:flex;gap:9px}.actions button{padding:7px 12px;font-size:12px}
 .note{font-size:12px;color:var(--muted);line-height:1.5;margin:13px 2px 0}
 footer{padding:13px 30px;background:#fafbfd;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
@@ -59,8 +59,13 @@ function renderReport(text){
   let section=null,grid=null;
   lines.slice(1).forEach(line=>{
    if(line===lines[1]&&line.startsWith('Файл:')){const meta=document.createElement('div');meta.className='report-item';meta.style.marginBottom='9px';const lab=document.createElement('span');lab.className='report-label';lab.textContent='ФАЙЛ';const val=document.createElement('span');val.className='report-value';val.textContent=line.slice(5).trim();meta.append(lab,val);wrap.appendChild(meta);return}
-   if(/^[A-ZА-ЯІЇЄҐ’'0-9 ][A-ZА-ЯІЇЄҐ’'0-9 _-]{3,}$/.test(line)&&!line.includes(':')){
-    section=document.createElement('section');section.className='report-section';
+   if(line==='СИСТЕМНІ ЗАВДАННЯ'){
+    const groupTitle=document.createElement('div');groupTitle.className='report-group-title';groupTitle.textContent=line;wrap.appendChild(groupTitle);
+    section=null;grid=null;return;
+   }
+   const isShutdownSection=line==='ВИМКНЕННЯ ТЕРМІНАЛА (SHUTDOWN)';
+   if(isShutdownSection||(/^[A-ZА-ЯІЇЄҐ’'0-9 ][A-ZА-ЯІЇЄҐ’'0-9 _-]{3,}$/.test(line)&&!line.includes(':'))){
+    section=document.createElement('section');section.className='report-section'+(isShutdownSection?' shutdown-highlight':'');
     const h=document.createElement('h3');h.textContent=line;section.appendChild(h);
     grid=document.createElement('div');grid.className='report-grid';section.appendChild(grid);wrap.appendChild(section);return;
    }
@@ -135,7 +140,7 @@ function decodeConfig(text,name){
  add('SelectedValidator','Тип купюроприймача');
 
 
- lines.push('','СИСТЕМНІ ЗАВДАННЯ');
+ lines.push('','СИСТЕМНІ ЗАВДАННЯ','ВИМКНЕННЯ ТЕРМІНАЛА (SHUTDOWN)');
  const taskNodes=[...doc.getElementsByTagName('SystemTaskSetting')];
  const shutdownTasks=taskNodes.filter(t=>{const e=t.getElementsByTagName('EventType')[0];return !e||e.textContent.trim().toLowerCase()==='shutdown'});
  const sources=shutdownTasks.length?shutdownTasks:[doc];
@@ -145,7 +150,13 @@ function decodeConfig(text,name){
    const v=txt(t,tag);if(v!==null&&!emitted.has(tag)){lines.push(label+': '+(mode==='clock'?clock(v):bool(v)));emitted.add(tag)}
   });
  });
- // Other system tasks are intentionally displayed only as enabled/disabled.
+ // Fallback for configurations where schedule fields are stored outside SystemTaskSetting.
+ if(!emitted.size){
+  [['BeginTime','Вимикати термінал о','clock'],['EndTime','Не давати вмикатися до','clock'],['IsEnabled','Завдання активне','bool'],['ExecutedInSpecifiedTimeInterval','Виконувати у визначеному часовому інтервалі','bool']].forEach(([tag,label,mode])=>{
+   const v=txt(doc,tag);if(v!==null){lines.push(label+': '+(mode==='clock'?clock(v):bool(v)));emitted.add(tag)}
+  });
+ }
+ // Other system tasks are displayed separately with status only.
  const otherTaskLabels={
   Suspend:'Suspend — сплячий режим',
   Hibernate:'Hibernate — гібернація',
@@ -153,19 +164,15 @@ function decodeConfig(text,name){
   ScreenTurnOff:'ScreenTurnOff — вимкнення екрана',
   RebootOnNoClick:'RebootOnNoClick — перезавантаження за відсутності натискань'
  };
+ const otherTaskLines=[];
  taskNodes.forEach(t=>{
   const event=txt(t,'EventType');
   if(!event||event==='Shutdown')return;
   const enabled=txt(t,'IsEnabled');
   if(enabled===null)return;
-  lines.push((otherTaskLabels[event]||event)+': '+bool(enabled));
+  otherTaskLines.push((otherTaskLabels[event]||event)+': '+bool(enabled));
  });
- // Fallback for configurations where schedule fields are stored outside SystemTaskSetting.
- if(!emitted.size){
-  [['BeginTime','Вимикати термінал о','clock'],['EndTime','Не давати вмикатися до','clock'],['IsEnabled','Завдання активне','bool'],['ExecutedInSpecifiedTimeInterval','Виконувати у визначеному часовому інтервалі','bool']].forEach(([tag,label,mode])=>{
-   const v=txt(doc,tag);if(v!==null){lines.push(label+': '+(mode==='clock'?clock(v):bool(v)));emitted.add(tag)}
-  });
- }
+ if(otherTaskLines.length)lines.push('','ІНШІ СИСТЕМНІ ЗАВДАННЯ',...otherTaskLines);
 
  return lines.join('\r\n');
 }
