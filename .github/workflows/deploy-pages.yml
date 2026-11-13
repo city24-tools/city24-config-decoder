@@ -28,8 +28,20 @@ jobs:
           mkdir -p /tmp/filing-package _site/vendor
           npm install --prefix /tmp/filing-package --no-save filing@0.1.2
           cp index.html _site/index.html
-          cp /tmp/filing-package/node_modules/filing/dist/umd/filing.min.js _site/vendor/filing.min.js
-          cp /tmp/filing-package/node_modules/filing/dist/esm/wasm/archive.wasm _site/vendor/archive.wasm
+          echo "Installed Filing package files:"
+          find /tmp/filing-package/node_modules/filing/dist -maxdepth 5 -type f -print
+          JS_FILE="$(find /tmp/filing-package/node_modules/filing/dist/umd -maxdepth 2 -type f -name '*.js' -print -quit)"
+          WASM_FILE="$(find /tmp/filing-package/node_modules/filing/dist -type f -name 'archive.wasm' -print -quit)"
+          if [ -z "$JS_FILE" ]; then
+            echo "ERROR: Filing UMD JavaScript bundle was not found."
+            exit 1
+          fi
+          if [ -z "$WASM_FILE" ]; then
+            echo "ERROR: Filing archive.wasm was not found."
+            exit 1
+          fi
+          cp "$JS_FILE" _site/vendor/filing.min.js
+          cp "$WASM_FILE" _site/vendor/archive.wasm
           printf '' > _site/.nojekyll
           echo "Packaged local Filing JS and WebAssembly:"
           ls -lh _site/vendor
