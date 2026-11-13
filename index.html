@@ -51,9 +51,9 @@ function clock(v){const n=Number(v);return Number.isFinite(n)&&n>=0?String(Math.
 function bool(v,mode='normal'){if(v===null)return null;const yes=/^true$/i.test(v);if(mode==='inverse')return yes?'Ні':'Так';if(mode==='yesno')return yes?'Так':'Ні';return yes?'Увімкнено':'Вимкнено'}
 function renderReport(text){
  const host=$('result');host.replaceChildren();
- const reports=text.split(/\\r?\\n={20,}\\r?\\n/);
+ const reports=text.split(/\r?\n={20,}\r?\n/);
  reports.forEach(report=>{
-  const lines=report.split(/\\r?\\n/).filter(Boolean);if(!lines.length)return;
+  const lines=report.split(/\r?\n/).filter(Boolean);if(!lines.length)return;
   const wrap=document.createElement('div');wrap.className='report-file';
   const title=document.createElement('div');title.className='report-title';title.textContent=lines[0];wrap.appendChild(title);
   let section=null,grid=null;
